@@ -96,13 +96,15 @@ export class ProgramBuilder {
         });
     }
 
-    extrusionFeature(args: { path: PathProps, offset: PointProps, xyspeed: number, zspeed: number, extrudeFactor: number }) {
+    extrusionFeature(args: { path: PathProps, offset: PointProps, xyspeed: number, zspeed: number, extrudeAdvance: number, deOozingDistance: number, extrudeFactor?: number }) {
         return computeExtrusionAdaptive(this, {
             path: Path.from(args.path),
             offset: Point.from(args.offset),
             xyspeed: args.xyspeed,
             zspeed: args.zspeed,
-            extrudeFactor: args.extrudeFactor,
+            extrudeFactor: args.extrudeFactor || 1,
+            extrudeAdvance: args.extrudeAdvance,
+            deOozingDistance: args.deOozingDistance
         });
     }
 

@@ -1,6 +1,6 @@
 import { EPSILON } from "../../utils/EPSILON";
 import { cache } from "../../utils/cache";
-import { Line } from "./Line";
+import { Vector } from "./Vector";
 import { Point, PointProps } from "./Point";
 
 export type PathProps = { points: PointProps[] } | PointProps[];
@@ -28,10 +28,10 @@ export class Path {
     }
 
     @cache
-    get lines(): Line[] {
-        const lines: Line[] = [];
+    get vectors(): Vector[] {
+        const lines: Vector[] = [];
         for (let i = 0; i < this.points.length - 1; i++) {
-            lines.push(new Line(this.points[i], this.points[i + 1]));
+            lines.push(new Vector(this.points[i], this.points[i + 1]));
         }
         return lines;
     }

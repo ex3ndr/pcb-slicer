@@ -9,7 +9,7 @@ export function computeExtrusionNaive(to: ProgramBuilder, options: { path: Path,
     to = to.zDown();
 
     // For each line
-    for (let l of options.path.lines) {
+    for (let l of options.path.vectors) {
 
         // Compute extrusion
         let e = calculateTotalExtrusionDistance({ nozzle: to.config.extrusion.nozzle, length: l.length }) * options.extrudeFactor;

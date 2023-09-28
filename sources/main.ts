@@ -35,14 +35,18 @@ for (let i = 0; i < count; i++) {
             { x: side, y: 0 }
         ],
         offset: { x, y },
-        extrudeFactor: interpolate(progress, 20, 100),
         zspeed: 20,
         xyspeed: 5,
+        extrudeAdvance: 40,
+        deOozingDistance: 2
     });
+
+    // Padding
+    builder.move({ to: { x: x + side + 5, y }, feed: 5 });
 
     // Draw path without extrusion
     builder.zDown();
-    builder.move({ to: { x: x + side * 2, y }, feed: 5 });
+    builder.move({ to: { x: x + side * 2 + 5, y }, feed: 5 });
 
     // Lift up
     builder.endFeature();
