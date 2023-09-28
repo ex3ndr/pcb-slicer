@@ -24,23 +24,21 @@ for (let i = 0; i < count; i++) {
     let x = 10;
     let y = i * padding + 50;
     let progress = i / (count - 1);
-    let baseExtrusion = 0.225 / 1.75;
 
     // Go to path start
     builder.startFeature({ name: 'Path ' + i, at: { x, y } });
 
     // Draw path
-    builder.zDown();
-    builder.naiveExtrusionFeature({
+    builder.extrusionFeature({
         path: [
             { x: 0, y: 0 },
             { x: side, y: 0 }
         ],
         offset: { x, y },
-        extrudeFactor: interpolate(progress, baseExtrusion * 0.8, baseExtrusion * 2),
-        feed: 5,
+        extrudeFactor: interpolate(progress, 20, 100),
+        zspeed: 20,
+        xyspeed: 5,
     });
-    builder.zHop();
 
     // Draw path without extrusion
     builder.zDown();

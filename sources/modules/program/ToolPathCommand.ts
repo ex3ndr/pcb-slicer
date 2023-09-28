@@ -1,3 +1,4 @@
+import { formatNumber } from "../../utils/formatNumber";
 import { Point } from "../primitives/Point";
 
 export type ToolPathCommandProps = {
@@ -30,11 +31,11 @@ export class ToolPathCommand {
 
     get gcode() {
         let r = 'G1';
-        if (this.x !== undefined) r += ` X${this.x.toFixed(4)}`;
-        if (this.y !== undefined) r += ` Y${this.y.toFixed(4)}`;
-        if (this.z !== undefined) r += ` Z${this.z.toFixed(4)}`;
-        if (this.e !== undefined) r += ` E${this.e.toFixed(4)}`;
-        if (this.f !== undefined) r += ` F${(this.f * 60).toFixed(4)}`;
+        if (this.x !== undefined) r += ` X${formatNumber(this.x)}`;
+        if (this.y !== undefined) r += ` Y${formatNumber(this.y)}`;
+        if (this.z !== undefined) r += ` Z${formatNumber(this.z)}`;
+        if (this.e !== undefined) r += ` E${formatNumber(this.e)}`;
+        if (this.f !== undefined) r += ` F${formatNumber(this.f * 60)}`;
         return r;
     }
 

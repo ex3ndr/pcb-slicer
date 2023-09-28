@@ -13,7 +13,7 @@ export class Line {
 
     @cache
     get length() {
-        return Math.sqrt(Math.pow(this.start.x - this.start.x, 2) + Math.pow(this.start.y - this.start.y, 2));
+        return Math.sqrt(Math.pow(this.start.x - this.end.x, 2) + Math.pow(this.start.y - this.end.y, 2));
     }
 
     @cache

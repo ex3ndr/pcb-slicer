@@ -2,6 +2,7 @@ import { Config } from "../config/Config";
 import { Path, PathProps } from "../primitives/Path";
 import { Point, PointProps } from "../primitives/Point";
 import { ToolPathCommand, ToolPathCommandProps } from "./ToolPathCommand";
+import { computeExtrusionAdaptive } from "./computeExtrusionAdaptive";
 import { computeExtrusionNaive } from "./computeExtrusionNaive";
 
 export class ProgramBuilder {
@@ -10,6 +11,10 @@ export class ProgramBuilder {
 
     constructor(config: Config) {
         this.#config = config;
+    }
+
+    get config() {
+        return this.#config;
     }
 
     //
@@ -82,7 +87,7 @@ export class ProgramBuilder {
     // Extrusions
     //
 
-    naiveExtrusionFeature(args: { path: PathProps, offset: PointProps, feed: number, extrudeFactor: number }) {
+    extrusionFeatureNaive(args: { path: PathProps, offset: PointProps, feed: number, extrudeFactor: number }) {
         return computeExtrusionNaive(this, {
             path: Path.from(args.path),
             offset: Point.from(args.offset),
@@ -90,6 +95,17 @@ export class ProgramBuilder {
             extrudeFactor: args.extrudeFactor,
         });
     }
+
+    extrusionFeature(args: { path: PathProps, offset: PointProps, xyspeed: number, zspeed: number, extrudeFactor: number }) {
+        return computeExtrusionAdaptive(this, {
+            path: Path.from(args.path),
+            offset: Point.from(args.offset),
+            xyspeed: args.xyspeed,
+            zspeed: args.zspeed,
+            extrudeFactor: args.extrudeFactor,
+        });
+    }
+
 
     //
     // Finalize
