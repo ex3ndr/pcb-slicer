@@ -18,6 +18,10 @@ export class Path {
         this.points = points;
     }
 
+    get origin() {
+        return this.points[0];
+    }
+
     @cache
     get length() {
         let length = 0;
@@ -31,7 +35,7 @@ export class Path {
     get vectors(): Vector[] {
         const lines: Vector[] = [];
         for (let i = 0; i < this.points.length - 1; i++) {
-            lines.push(new Vector(this.points[i], this.points[i + 1]));
+            lines.push(new Vector(this.points[i + 1].x - this.points[i].x, this.points[i + 1].y - this.points[i].y));
         }
         return lines;
     }
@@ -39,5 +43,16 @@ export class Path {
     @cache
     get isClosed() {
         return this.points[0].distanceTo(this.points[this.points.length - 1]) < EPSILON;
+    }
+
+    split(at: number) {
+        if (at <= 0) throw new Error("Invalid split position");
+        if (at >= this.length) throw new Error("Invalid split position");
+
+        // Compute first part
+        const first: Point[] = [this.points[0]];
+        for (let i = 1; i < this.points.length; i++) {
+
+        }
     }
 }

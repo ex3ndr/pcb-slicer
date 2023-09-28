@@ -1,29 +1,33 @@
+import { EPSILON } from "../../utils/EPSILON";
 import { cache } from "../../utils/cache";
-import { Point } from "./Point";
 
 export class Vector {
 
-    public readonly start: Point;
-    public readonly end: Point;
+    static from(dx: number, dy: number): Vector {
+        return new Vector(dx, dy);
+    }
 
-    constructor(a: Point, b: Point) {
-        this.start = a;
-        this.end = b;
+    public readonly dx: number;
+    public readonly dy: number;
+
+    constructor(dx: number, dy: number) {
+        this.dx = dx;
+        this.dy = dy
     }
 
     @cache
     get length() {
-        return Math.sqrt(Math.pow(this.start.x - this.end.x, 2) + Math.pow(this.start.y - this.end.y, 2));
-    }
-
-    @cache
-    get midpoint(): Point {
-        return new Point({ x: (this.start.x + this.end.x) / 2, y: (this.start.y + this.end.y) / 2 });
+        return Math.sqrt(Math.pow(this.dx, 2) + Math.pow(this.dy, 2));
     }
 
     @cache
     get inversed(): Vector {
-        return new Vector(this.end, this.start);
+        return new Vector(-this.dx, -this.dy);
+    }
+
+    @cache
+    get isDot(): boolean {
+        return this.length === 0;
     }
 
     @cache
@@ -31,17 +35,21 @@ export class Vector {
         return this.multiply(1 / this.length);
     }
 
+    split(at: number): [Vector, Vector] {
+
+        // Check if split is possible
+        let lengthA = at;
+        let lengthB = this.length - at;
+        if (lengthA <= EPSILON) throw new Error("Invalid split position");
+        if (lengthB <= EPSILON) throw new Error("Invalid split position");
+
+        // Split vector in two
+        let vector = this.normalised;
+        return [vector.multiply(lengthA), vector.multiply(lengthB)];
+    }
+
     multiply = (v: number): Vector => {
-
-        // Get length
         let l = this.length;
-        if (l === 0) return this;
-
-        // Get new end point
-        let x = this.start.x + (this.end.x - this.start.x) / l * v;
-        let y = this.start.y + (this.end.y - this.start.y) / l * v;
-
-        // Return new vector
-        return new Vector(this.start, Point.from({ x, y }));
+        return new Vector(this.dx * v / l, this.dy * v / l);
     }
 }

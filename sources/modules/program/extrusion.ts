@@ -1,4 +1,5 @@
 const BASE_DIAMETER = 1.75; // In firmware we use 1.75mm as base diameter to make calculations similar to 3d slicers
+const BASE_SECTION = Math.pow(BASE_DIAMETER / 2, 2) * Math.PI; // Base section area
 
 /**
  * Calculate total extrusion distance for a given path assumuing that the path section is simply semi-crcle
@@ -12,11 +13,8 @@ export function calculateTotalExtrusionDistance(props: { nozzle: number, length:
     // Total extrusion volume (ideal)
     const volume = sectionArea * props.length;
 
-    // "Filament" section area
-    const filamentSectionArea = Math.pow(BASE_DIAMETER / 2, 2) * Math.PI;
-
     // Total extrusion distance
-    return volume / filamentSectionArea;
+    return volume / BASE_SECTION;
 }
 
 /**

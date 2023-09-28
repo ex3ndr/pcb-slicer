@@ -14,6 +14,8 @@ export function computeExtrusionAdaptive(to: ProgramBuilder, options: {
     deOozingDistance: number
 }) {
 
+    // Current posision
+    let posision = options.path.origin.add(options.offset.asVector);
 
     // Build extrusion pressure
     to = to.comment('Build pressure');
@@ -23,7 +25,8 @@ export function computeExtrusionAdaptive(to: ProgramBuilder, options: {
     // Follow path
     to = to.comment('Main extrusion');
     for (let l of options.path.vectors) {
-        to = to.add({ x: l.end.x + options.offset.x, y: l.end.y + options.offset.y, f: options.xyspeed });
+        posision = posision.add(l);
+        to = to.add({ x: posision.x, y: posision.y, f: options.xyspeed });
     }
 
     // Lift up and retract
@@ -63,7 +66,8 @@ export function computeExtrusionAdaptive(to: ProgramBuilder, options: {
         }
 
         // Move to the next line
-        to = to.add({ x: vec.end.x + options.offset.x, y: vec.end.y + options.offset.y, f: options.xyspeed });
+        posision = posision.add(vec);
+        to = to.add({ x: posision.x, y: posision.y, f: options.xyspeed });
     }
 
     // Lift up

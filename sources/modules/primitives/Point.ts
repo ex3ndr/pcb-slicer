@@ -1,3 +1,6 @@
+import { cache } from "../../utils/cache";
+import { Vector } from "./Vector";
+
 export type PointProps = { x: number, y: number };
 
 export class Point {
@@ -14,8 +17,13 @@ export class Point {
         this.y = props.y;
     }
 
-    translate(by: Point) {
-        return new Point({ x: this.x + by.x, y: this.y + by.y });
+    @cache
+    get asVector(): Vector {
+        return new Vector(this.x, this.y);
+    }
+
+    add(src: Vector): Point {
+        return new Point({ x: this.x + src.dx, y: this.y + src.dy });
     }
 
     distanceTo(point: Point) {

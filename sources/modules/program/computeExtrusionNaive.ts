@@ -9,13 +9,17 @@ export function computeExtrusionNaive(to: ProgramBuilder, options: { path: Path,
     to = to.zDown();
 
     // For each line
+    let current = options.path.origin.add(options.offset.asVector);
     for (let l of options.path.vectors) {
+
+        // Update current position
+        current = current.add(l);
 
         // Compute extrusion
         let e = calculateTotalExtrusionDistance({ nozzle: to.config.extrusion.nozzle, length: l.length }) * options.extrudeFactor;
 
         // Move to next point extrudin along the way
-        to = to.add({ x: l.end.x + options.offset.x, y: l.end.y + options.offset.y, e, f: options.feed });
+        to = to.add({ x: current.x, y: current.y, e, f: options.feed });
     }
 
     // Lift up
