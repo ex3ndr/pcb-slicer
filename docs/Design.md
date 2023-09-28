@@ -1,4 +1,4 @@
-# Slicing Design Document
+# Design Document
 
 ## Introduction
 Slicing for PCBs is a very different task since the paste is not a filament. We are trying to combad problems of using paste using multiple techniques.
