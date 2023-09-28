@@ -52,7 +52,7 @@ export function computeExtrusionAdaptive(to: ProgramBuilder, options: {
         }
 
         // Get next line
-        let vec = remainingPath.pop()!;
+        let vec = remainingPath.shift()!;
 
         // Get next point and adjust distance
         if (vec.length >= remainingDistance) {
