@@ -4,6 +4,7 @@ import { CONFIG_DEFAULTS, Config } from './modules/config/Config';
 import { interpolate } from './modules/math/interpolate';
 import { PointProps } from './modules/math/Point';
 import { extrusionFromPlunge } from './modules/math/extrusion';
+import { createSquare } from './modules/program/shapes';
 
 // Create builder
 const config: Config = {
@@ -23,37 +24,29 @@ for (let i = 0; i < count; i++) {
 
     let padding = 3;
     let side = 3;
-    let x = 10;
-    let y = i * (padding + side) + 50;
     let progress = i / (count - 1);
 
     // Go to path start
-    builder.startFeature({ name: 'Path ' + i, at: { x, y } });
+    builder.startFeature({
+        name: 'Path ' + i,
+        at: {
+            x: 10,
+            y: i * (padding + side) + 50
+        }
+    });
 
     // Draw path
-    let path: PointProps[] = [
-        { x: 0, y: 0 },
-        { x: side, y: 0 },
-        { x: side, y: side },
-        { x: 0, y: side },
-        { x: 0, y: 0 }
-    ];
-    builder.extrusionFeature({
-        path: path,
-        offset: { x, y },
-
-        // Target speeds
-        zspeed: 5,
-        xyspeed: 5,
-        espeed: 40,
+    let path = createSquare(side);
+    builder.extrusionFeature(path, {
 
         // This is the factor that is used to compute used material volume. Since formula is unclear i left it as a parameter
-        extrudeFactor: 0.5,
+        kFactor: 0.5,
 
         // It seems that his is called "kick" in ink database, this value is 3 times less than mine but in my tests it worked too
         // 0.3 means rotating the dispenser by roughtly 1/2 of a turn
-        // extrudeAdvance: extrusionFromPlunge(0.3), // Does not work
-        extrudeAdvance: extrusionFromPlunge(interpolate(progress, 0.3, 1)),
+        pressureAdvance: interpolate(progress, 0.3, 1),
+        advanceFactor: 0.1,
+        releaseFactor: 0.1,
 
         // In ink database it seems to be called "antiString" and it is something like "0.1".
         // It is not clear what this value means but 0.1 seems to be too small, but 2mm seems to be too big too
@@ -61,11 +54,11 @@ for (let i = 0; i < count; i++) {
     });
 
     // Padding
-    builder.move({ to: { x: x + side + 5, y }, feed: 5 });
+    builder.move({ to: { x: side + 5, y: 0 }, feed: 5 });
 
     // Draw path without extrusion
     builder.zDown();
-    builder.move({ to: { x: x + side * 2 + 5, y }, feed: 5 });
+    builder.move({ to: { x: side * 2 + 5, y: 0 }, feed: 5 });
 
     // Lift up
     builder.endFeature();

@@ -9,7 +9,6 @@ export type Config = {
 
     // How to extrude
     extrusion: {
-        nozzle: number,
         height: number,
         zHop: number,
     }
@@ -20,13 +19,12 @@ export const CONFIG_DEFAULTS: Config = {
     // Going conservative here
     speed: {
         e: 40,
-        z: 5,
+        z: 20,
         xy: 5
     },
 
     // Sane defaults
     extrusion: {
-        nozzle: 0.23, // Disposable nozzles are 0.23mm
         height: 0.15,
         zHop: 2
     }

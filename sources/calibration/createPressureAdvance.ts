@@ -19,5 +19,6 @@ export function createPressureAdvance() {
         current += delta;
     }
 
+    builder.move({ to: { x: -35, y: 100 }, feed: 50 });
     return builder.build();
 }

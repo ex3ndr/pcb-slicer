@@ -1,38 +1,37 @@
 import { Path } from "../math/Path";
 import { Point } from "../math/Point";
 import { ProgramBuilder } from "./ProgramBuilder";
-import { extrusionDistance } from "../math/extrusion";
-import { compoundFeed, maximumFeed } from "../math/speeds";
 import { PathWalker } from "../math/PathWalker";
+import { EPSILON } from "../../constants";
+import { calculatePressureAdvanceParameters } from "./adaptive";
 
 export function computeExtrusionAdaptive(to: ProgramBuilder, options: {
     path: Path,
-    offset: Point,
-    xyspeed: number,
-    zspeed: number,
-    espeed: number,
-    extrudeFactor: number,
-    extrudeAdvance: number,
-    deOozingDistance: number
+    kFactor: number,
+    pressureAdvance: number,
+    deOozingDistance: number,
+    advanceFactor: number,
+    releaseFactor: number,
 }) {
 
+    // Speeds
+    let config = to.config;
+    let speeds = to.config.speed;
+
     // Current posision
-    let posision = options.path.origin.add(options.offset.asVector);
+    let posision = options.path.origin;
 
-    // Calculate used extrusion distance
-    let usedExtrusionDistance = extrusionDistance({ nozzle: to.config.extrusion.nozzle, length: options.path.length }) * options.extrudeFactor;
-
-    // Split pressure advance into XY and Z components
-    let advanceFactor = 0.1;
-    let advanceZ = options.extrudeAdvance * (1 - advanceFactor);
-    let advanceXY = options.extrudeAdvance * advanceFactor;
-    let advanceXYDistance = advanceXY * options.xyspeed / options.espeed;
-
-    // Calculate pressure release
-    let releaseFactor = 0.9;
-    let releaseZ = (options.extrudeAdvance - usedExtrusionDistance) * (1 - releaseFactor);
-    let releaseXY = (options.extrudeAdvance - usedExtrusionDistance) * releaseFactor;
-    let releaseXYDistance = releaseXY * options.xyspeed / options.espeed;
+    // Calculate pressure advance
+    let pressure = calculatePressureAdvanceParameters({
+        distance: options.path.length,
+        speeds: speeds,
+        material: {
+            kFactor: options.kFactor,
+            pressureAdvance: options.pressureAdvance,
+            advanceFactor: options.advanceFactor,
+            releaseFactor: options.releaseFactor
+        }
+    })
 
     // Walker to traverse the path
     let walker = new PathWalker({ path: options.path, startAt: 'begining', allowCycles: true });
@@ -42,54 +41,59 @@ export function computeExtrusionAdaptive(to: ProgramBuilder, options: {
     //
 
     to = to.comment('Build pressure');
-    let initialFeed = maximumFeed(
-        { distance: to.config.extrusion.zHop, speed: options.zspeed },
-        { distance: advanceZ, speed: options.espeed }
-    );
-    to = to.add({ z: to.config.extrusion.height, e: advanceZ, f: compoundFeed(...initialFeed) });
+    to = to.extrude({
+        e: { distance: pressure.advance.zExtrusion, speed: speeds.e },
+        z: { to: config.extrusion.height, distance: config.extrusion.zHop, speed: speeds.z }
+    });
 
     //
     // 2. Extrude remaining part of a feature
     //
 
     to = to.comment('Main extrusion');
-    for (let l of walker.nextDistance(advanceXYDistance)) {
-        posision = posision.add(l);
-        let e = l.length * options.espeed / options.xyspeed;
-        to = to.add({ x: posision.x, y: posision.y, e: e, f: options.xyspeed });
+    if (pressure.advance.distance > EPSILON) { // Ignore too small xy advance
+        for (let l of walker.nextDistance(pressure.advance.distance)) {
+            posision = posision.add(l);
+            let e = l.length * speeds.e / speeds.xy;
+            to = to.add({ x: posision.x, y: posision.y, e: e, f: speeds.xy }); // Feed is always maximum and don't need to be re-calculated
+        }
     }
     if (walker.cycles === 0) {
         for (let l of walker.tillNextCycle()) {
             posision = posision.add(l);
-            to = to.add({ x: posision.x, y: posision.y, f: options.xyspeed });
+            to = to.add({ x: posision.x, y: posision.y, f: speeds.xy });
         }
     }
+
 
     //
     // 3. Releasing pressure
     //
 
     to = to.comment('Release pressure');
-    for (let l of walker.nextDistance(releaseXYDistance)) {
-        posision = posision.add(l);
-        let e = -l.length * options.espeed / options.xyspeed;
-        to = to.add({ x: posision.x, y: posision.y, e: e, f: options.xyspeed });
+    if (pressure.release.distance > EPSILON) { // Ignore too small xy release
+        for (let l of walker.nextDistance(pressure.release.distance)) {
+            posision = posision.add(l);
+            let e = -l.length * speeds.e / speeds.xy;
+            to = to.add({ x: posision.x, y: posision.y, e: e, f: speeds.xy }); // Feed is always maximum and don't need to be re-calculated
+        }
     }
-    let releaseFeed = maximumFeed(
-        { distance: to.config.extrusion.zHop, speed: options.zspeed },
-        { distance: releaseZ, speed: options.espeed }
-    );
-    to = to.add({ z: to.config.extrusion.height + to.config.extrusion.zHop, e: -releaseZ, f: compoundFeed(...releaseFeed) }); // Do we need to lift?
+    to = to.extrude({
+        e: { distance: -pressure.release.zExtrusion, speed: speeds.e },
+        z: { to: config.extrusion.height + config.extrusion.zHop, distance: config.extrusion.zHop, speed: speeds.z }
+    });
 
     //
     // 4. De-oozing
     //
 
-    to = to.comment('De-ooze');
-    to = to.add({ z: to.config.extrusion.height, f: options.zspeed });
-    for (let l of walker.nextDistance(options.deOozingDistance)) {
-        posision = posision.add(l);
-        to = to.add({ x: posision.x, y: posision.y, f: options.xyspeed });
+    if (options.deOozingDistance > EPSILON) {
+        to = to.comment('De-ooze');
+        to = to.add({ z: to.config.extrusion.height, f: speeds.z });
+        for (let l of walker.nextDistance(options.deOozingDistance)) {
+            posision = posision.add(l);
+            to = to.add({ x: posision.x, y: posision.y, f: speeds.xy });
+        }
     }
 
     // Lift up

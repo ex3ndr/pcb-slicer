@@ -35,16 +35,43 @@ export function maximumFeed(...feeds: { distance: number, speed: number }[]): nu
     // Iterate to find shortest possible time as a maximum of minimum times for each axis
     let time = feeds[0].distance / feeds[0].speed;
     for (let i = 1; i < feeds.length; i++) {
-        let t = feeds[i].distance / feeds[i].speed; // Shortest time for axis
+        let t = Math.abs(feeds[i].distance) / feeds[i].speed; // Shortest time for axis
         time = Math.max(time, t);
     }
 
     // Calculate feed
     let feed: number[] = [];
     for (let f of feeds) {
-        feed.push(f.distance / time);
+        feed.push(Math.abs(f.distance) / time);
     }
 
     // Result
+    return feed;
+}
+
+export function extrusionFeed(extrusion: number, speed: number, ...movements: { distance: number, speed: number }[]) {
+
+    // Calculate default feed
+    let feed = compoundFeed(...maximumFeed(...movements));
+
+    // Calculate distance
+    let distance = 0;
+    for (let m of movements) {
+        distance += m.distance * m.distance;
+    }
+    distance = Math.sqrt(distance);
+
+    // Calculate time
+    let time = distance / feed;
+
+    // Calculate extrusion feed
+    let extrusionFeed = Math.abs(extrusion) / time;
+
+    // Rescale feed
+    if (extrusionFeed > speed) {
+        let newTime = Math.abs(extrusion) / speed;
+        feed = distance / newTime;
+    }
+
     return feed;
 }
