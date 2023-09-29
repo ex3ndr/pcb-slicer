@@ -1,6 +1,6 @@
 import { Config } from "../config/Config";
-import { Path, PathProps } from "../primitives/Path";
-import { Point, PointProps } from "../primitives/Point";
+import { Path, PathProps } from "../math/Path";
+import { Point, PointProps } from "../math/Point";
 import { ToolPathCommand, ToolPathCommandProps } from "./ToolPathCommand";
 import { computeExtrusionAdaptive } from "./computeExtrusionAdaptive";
 import { computeExtrusionNaive } from "./computeExtrusionNaive";
@@ -96,12 +96,13 @@ export class ProgramBuilder {
         });
     }
 
-    extrusionFeature(args: { path: PathProps, offset: PointProps, xyspeed: number, zspeed: number, extrudeAdvance: number, deOozingDistance: number, extrudeFactor?: number }) {
+    extrusionFeature(args: { path: PathProps, offset: PointProps, xyspeed: number, espeed: number, zspeed: number, extrudeAdvance: number, deOozingDistance: number, extrudeFactor?: number }) {
         return computeExtrusionAdaptive(this, {
             path: Path.from(args.path),
             offset: Point.from(args.offset),
             xyspeed: args.xyspeed,
             zspeed: args.zspeed,
+            espeed: args.espeed,
             extrudeFactor: args.extrudeFactor || 1,
             extrudeAdvance: args.extrudeAdvance,
             deOozingDistance: args.deOozingDistance

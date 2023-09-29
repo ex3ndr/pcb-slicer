@@ -1,7 +1,7 @@
-import type { Path } from "../primitives/Path";
-import type { Point } from "../primitives/Point";
+import type { Path } from "../math/Path";
+import type { Point } from "../math/Point";
 import type { ProgramBuilder } from "./ProgramBuilder";
-import { calculateTotalExtrusionDistance } from "./extrusion";
+import { extrusionDistance } from "../math/extrusion";
 
 export function computeExtrusionNaive(to: ProgramBuilder, options: { path: Path, offset: Point, feed: number, extrudeFactor: number }) {
 
@@ -16,7 +16,7 @@ export function computeExtrusionNaive(to: ProgramBuilder, options: { path: Path,
         current = current.add(l);
 
         // Compute extrusion
-        let e = calculateTotalExtrusionDistance({ nozzle: to.config.extrusion.nozzle, length: l.length }) * options.extrudeFactor;
+        let e = extrusionDistance({ nozzle: to.config.extrusion.nozzle, length: l.length }) * options.extrudeFactor;
 
         // Move to next point extrudin along the way
         to = to.add({ x: current.x, y: current.y, e, f: options.feed });

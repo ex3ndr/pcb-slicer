@@ -26,6 +26,10 @@ export class Point {
         return new Point({ x: this.x + src.dx, y: this.y + src.dy });
     }
 
+    equals(point: Point) {
+        return this.x === point.x && this.y === point.y;
+    }
+
     distanceTo(point: Point) {
         return Math.sqrt(Math.pow(this.x - point.x, 2) + Math.pow(this.y - point.y, 2));
     }

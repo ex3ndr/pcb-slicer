@@ -1,5 +1,6 @@
 import { formatNumber } from "../../utils/formatNumber";
-import { Point } from "../primitives/Point";
+import { convertExtruderDistance, convertFeed } from "../math/convert";
+import { Point } from "../math/Point";
 
 export type ToolPathCommandProps = {
     x?: number;
@@ -34,8 +35,8 @@ export class ToolPathCommand {
         if (this.x !== undefined) r += ` X${formatNumber(this.x)}`;
         if (this.y !== undefined) r += ` Y${formatNumber(this.y)}`;
         if (this.z !== undefined) r += ` Z${formatNumber(this.z)}`;
-        if (this.e !== undefined) r += ` E${formatNumber(this.e)}`;
-        if (this.f !== undefined) r += ` F${formatNumber(this.f * 60)}`;
+        if (this.e !== undefined) r += ` E${formatNumber(convertExtruderDistance(this.e))}`;
+        if (this.f !== undefined) r += ` F${formatNumber(convertFeed(this.f))}`;
         return r;
     }
 

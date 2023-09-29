@@ -1,10 +1,14 @@
-import { EPSILON } from "../../utils/EPSILON";
 import { cache } from "../../utils/cache";
+import { PointProps } from "./Point";
 
 export class Vector {
 
     static from(dx: number, dy: number): Vector {
         return new Vector(dx, dy);
+    }
+
+    static between(a: PointProps, b: PointProps): Vector {
+        return new Vector(b.x - a.x, b.y - a.y);
     }
 
     public readonly dx: number;
@@ -40,12 +44,16 @@ export class Vector {
         // Check if split is possible
         let lengthA = at;
         let lengthB = this.length - at;
-        if (lengthA <= EPSILON) throw new Error("Invalid split position");
-        if (lengthB <= EPSILON) throw new Error("Invalid split position");
+        if (lengthA <= 0) throw new Error("Invalid split position");
+        if (lengthB <= 0) throw new Error("Invalid split position");
 
         // Split vector in two
         let vector = this.normalised;
         return [vector.multiply(lengthA), vector.multiply(lengthB)];
+    }
+
+    add(v: Vector): Vector {
+        return new Vector(this.dx + v.dx, this.dy + v.dy);
     }
 
     multiply = (v: number): Vector => {

@@ -25,7 +25,7 @@ This design is my very fist design of gears and i just went to 12 and 24 teeth g
 ## Extruder math
 We are using klipper firmware and we would provide our calculations here for some settings for it. Unlike V One we are going to adjust distance to behave it like it extrudes standard filament. This simplifies configuration of the some low level tools and allows user to play around with a printer since it would behave like a standard one, but with a smaller nozzle. In the slicer we would use normal calculations for extrusion using full syringe volume and then convert it to firmware.
 
-- Syringe cross section: (6.35 ^ 2) * pi = 126.677 mm^2
+- Syringe cross section: (6.35 ^ 2) * pi = 126.677 mm^2 (mine turned out not circle, but it is aproximated to it)
 - Dispenser lead screw pitch: 0.7mm. My measurements show that it is 0.8mm per turn, but in the [sources code of V One](https://github.com/VolteraInc/v-one-marlin/blob/acad305bb86d41d31a7a733d18bbb7c3e31962e1/Marlin/Configuration.h#L186) it is 0.7 mm and i think it is more accurate.
 - Extruder gear ratio: 4:1
 - Dispenser rotation distance per one extruder motor rotation: pitch * ratio = 0.7 mm * 1/4 = 0.175 mm

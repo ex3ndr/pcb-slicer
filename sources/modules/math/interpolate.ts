@@ -1,4 +1,4 @@
-import { Point } from "../modules/primitives/Point";
+import { Point } from "./Point";
 
 export function interpolate<T extends number | Point>(v: number, from: T, to: T): T {
     if (from instanceof Point && to instanceof Point) {
