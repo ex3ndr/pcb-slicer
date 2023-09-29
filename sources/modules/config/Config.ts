@@ -5,6 +5,7 @@ export type Config = {
         z: number;
         e: number;
         xy: number;
+        xyTravel: number;
     },
 
     // How to extrude
@@ -20,7 +21,8 @@ export const CONFIG_DEFAULTS: Config = {
     speed: {
         e: 40,
         z: 20,
-        xy: 5
+        xy: 5,
+        xyTravel: 200,
     },
 
     // Sane defaults

@@ -83,7 +83,7 @@ export class ProgramBuilder {
     }
 
     move(opts: { to: PointProps, feed?: number }) {
-        return this.add({ x: opts.to.x, y: opts.to.y, f: opts.feed || this.#config.speed.xy });
+        return this.add({ x: opts.to.x, y: opts.to.y, f: opts.feed || this.#config.speed.xyTravel });
     }
 
     //
