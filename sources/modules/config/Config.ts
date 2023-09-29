@@ -19,9 +19,9 @@ export const CONFIG_DEFAULTS: Config = {
 
     // Going conservative here
     speed: {
-        e: 10,
-        z: 10,
-        xy: 100
+        e: 40,
+        z: 5,
+        xy: 5
     },
 
     // Sane defaults

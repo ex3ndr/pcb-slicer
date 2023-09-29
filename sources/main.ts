@@ -25,6 +25,7 @@ for (let i = 0; i < count; i++) {
     let side = 3;
     let x = 10;
     let y = i * (padding + side) + 50;
+    let progress = i / (count - 1);
 
     // Go to path start
     builder.startFeature({ name: 'Path ' + i, at: { x, y } });
@@ -42,7 +43,7 @@ for (let i = 0; i < count; i++) {
         offset: { x, y },
 
         // Target speeds
-        zspeed: 50,
+        zspeed: 5,
         xyspeed: 5,
         espeed: 40,
 
@@ -51,7 +52,8 @@ for (let i = 0; i < count; i++) {
 
         // It seems that his is called "kick" in ink database, this value is 3 times less than mine but in my tests it worked too
         // 0.3 means rotating the dispenser by roughtly 1/2 of a turn
-        extrudeAdvance: extrusionFromPlunge(0.3),
+        // extrudeAdvance: extrusionFromPlunge(0.3), // Does not work
+        extrudeAdvance: extrusionFromPlunge(interpolate(progress, 0.3, 1)),
 
         // In ink database it seems to be called "antiString" and it is something like "0.1".
         // It is not clear what this value means but 0.1 seems to be too small, but 2mm seems to be too big too

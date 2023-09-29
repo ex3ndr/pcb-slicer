@@ -1,4 +1,3 @@
-import { Vector } from "../math/Vector";
 import { Path } from "../math/Path";
 import { Point } from "../math/Point";
 import { ProgramBuilder } from "./ProgramBuilder";
@@ -24,10 +23,16 @@ export function computeExtrusionAdaptive(to: ProgramBuilder, options: {
     let usedExtrusionDistance = extrusionDistance({ nozzle: to.config.extrusion.nozzle, length: options.path.length }) * options.extrudeFactor;
 
     // Split pressure advance into XY and Z components
-    let advanceFactor = 0.5;
-    let advanceZ = options.extrudeAdvance * advanceFactor;
-    let advanceXY = options.extrudeAdvance * (1 - advanceFactor);
+    let advanceFactor = 0.1;
+    let advanceZ = options.extrudeAdvance * (1 - advanceFactor);
+    let advanceXY = options.extrudeAdvance * advanceFactor;
     let advanceXYDistance = advanceXY * options.xyspeed / options.espeed;
+
+    // Calculate pressure release
+    let releaseFactor = 0.9;
+    let releaseZ = (options.extrudeAdvance - usedExtrusionDistance) * (1 - releaseFactor);
+    let releaseXY = (options.extrudeAdvance - usedExtrusionDistance) * releaseFactor;
+    let releaseXYDistance = releaseXY * options.xyspeed / options.espeed;
 
     // Walker to traverse the path
     let walker = new PathWalker({ path: options.path, startAt: 'begining', allowCycles: true });
@@ -65,42 +70,25 @@ export function computeExtrusionAdaptive(to: ProgramBuilder, options: {
     //
 
     to = to.comment('Release pressure');
-    to = to.add({ z: to.config.extrusion.height + to.config.extrusion.zHop, f: options.zspeed, e: -(options.extrudeAdvance - usedExtrusionDistance) });
+    for (let l of walker.nextDistance(releaseXYDistance)) {
+        posision = posision.add(l);
+        let e = -l.length * options.espeed / options.xyspeed;
+        to = to.add({ x: posision.x, y: posision.y, e: e, f: options.xyspeed });
+    }
+    let releaseFeed = maximumFeed(
+        { distance: to.config.extrusion.zHop, speed: options.zspeed },
+        { distance: releaseZ, speed: options.espeed }
+    );
+    to = to.add({ z: to.config.extrusion.height + to.config.extrusion.zHop, e: -releaseZ, f: compoundFeed(...releaseFeed) }); // Do we need to lift?
 
-    // Move down to move backwards to hide oozed material
+    //
+    // 4. De-oozing
+    //
+
     to = to.comment('De-ooze');
     to = to.add({ z: to.config.extrusion.height, f: options.zspeed });
-
-    // De-ooze
-    let remainingDistance = options.deOozingDistance;
-    let remainingPath: Vector[] = [];
-    let backwardPass = true;
-    while (remainingDistance > 0) {
-
-        // Populate pending lines
-        if (remainingPath.length === 0) {
-            if (backwardPass) {
-                remainingPath = options.path.vectors.slice().reverse().map((v) => v.inversed);
-                backwardPass = false;
-            } else {
-                remainingPath = options.path.vectors.slice();
-                backwardPass = true;
-            }
-        }
-
-        // Get next line
-        let vec = remainingPath.shift()!;
-
-        // Get next point and adjust distance
-        if (vec.length >= remainingDistance) {
-            vec = vec.normalised.multiply(remainingDistance);
-            remainingDistance = 0;
-        } else {
-            remainingDistance -= vec.length;
-        }
-
-        // Move to the next line
-        posision = posision.add(vec);
+    for (let l of walker.nextDistance(options.deOozingDistance)) {
+        posision = posision.add(l);
         to = to.add({ x: posision.x, y: posision.y, f: options.xyspeed });
     }
 
